@@ -1,0 +1,30 @@
+{
+  "name": "Trials 2026 Study Program",
+  "short_name": "Trials 2026",
+  "description": "A local-first Grade 12 trials study planner with logs, reminders, and exam timelines.",
+  "start_url": "./Trials_2026_Study_Program.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#0a0d16",
+  "background_color": "#0a0d16",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
