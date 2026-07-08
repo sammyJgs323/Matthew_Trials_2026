@@ -372,8 +372,9 @@
   .log-cta{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#231600;font-weight:800;font-size:13px;
     border:none;border-radius:10px;padding:10px 15px;cursor:pointer;margin-top:14px;font-family:var(--sans)}
   .log-cta:hover{filter:brightness(1.06)}
+  .card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
   .export-logs{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);color:var(--ink);font-weight:800;font-size:12px;
-    border:1px solid var(--line2);border-radius:10px;padding:9px 13px;cursor:pointer;margin-top:14px;font-family:var(--sans)}
+    border:1px solid var(--line2);border-radius:10px;padding:9px 13px;cursor:pointer;font-family:var(--sans)}
   .export-logs:hover{border-color:var(--gold);color:var(--gold)}
   .modal-bg{position:fixed;inset:0;background:rgba(5,7,13,.72);backdrop-filter:blur(3px);z-index:200;
     display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.18s}
@@ -383,9 +384,25 @@
   .modal-bg.open .modal{transform:translateY(0)}
   .modal h4{margin:0 0 3px;font-size:17px;font-weight:800}
   .modal .md{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .modal .md.error{color:#ffb1b1}
+  .edit-state{display:none;margin:10px 0 2px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--gold) 32%,var(--line));
+    border-radius:9px;background:rgba(255,207,92,.08);color:#f6d98a;font-size:11px;font-weight:800}
+  .edit-state.show{display:block}
+  .modal-section{border:1px solid var(--line);background:rgba(10,13,22,.28);border-radius:12px;padding:12px;margin-top:12px}
+  .modal-section.soft{background:transparent;border-color:rgba(43,54,80,.72)}
+  .modal-section:first-of-type{margin-top:13px}
+  .modal-section label:first-child{margin-top:0}
+  .modal-section .section-note{font-size:11px;color:var(--muted2);margin-top:7px}
+  .hours-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+  .hours-quick button{border:1px solid var(--line2);background:var(--bg2);color:var(--muted);border-radius:8px;
+    font-family:var(--mono);font-size:12px;font-weight:800;padding:7px 0;cursor:pointer}
+  .hours-quick button:hover{border-color:var(--gold);color:var(--gold)}
+  .scale-hint{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted2);margin-top:6px}
   .modal label{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);font-weight:700;margin:14px 0 7px}
   .modal input[type=number]{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--ink);
     font-family:var(--mono);font-size:16px;padding:9px 11px}
+  .modal input[type=email]{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--ink);
+    font-family:var(--sans);font-size:14px;padding:9px 11px}
   .modal textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--ink);
     font-size:13px;padding:9px 11px;resize:vertical;min-height:58px;font-family:var(--sans)}
   .efforts{display:flex;gap:6px}
@@ -395,7 +412,8 @@
   .subject-chips{display:flex;flex-wrap:wrap;gap:7px}
   .subject-chips button{border:1px solid var(--line2);border-radius:999px;background:var(--bg2);color:var(--muted);
     font-family:var(--sans);font-size:12px;font-weight:800;padding:7px 10px;cursor:pointer;transition:.14s}
-  .subject-chips button.sel{background:color-mix(in srgb,var(--c) 18%,var(--bg2));border-color:var(--c);color:var(--ink)}
+  .subject-chips button.sel{background:color-mix(in srgb,var(--c) 24%,var(--bg2));border-color:var(--c);color:var(--ink);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 34%,transparent) inset}
+  .subject-chips button.sel::before{content:"✓ ";color:var(--c)}
   .modal-actions{display:flex;gap:9px;margin-top:18px}
   .modal-actions button{flex:1;border-radius:10px;padding:10px 0;font-weight:800;font-size:13px;cursor:pointer;border:1px solid var(--line2);font-family:var(--sans)}
   .mb-save{background:var(--gold);color:#231600;border-color:var(--gold)!important}
@@ -488,7 +506,10 @@
       <div class="today-sub" id="todaySub">—</div>
       <ul class="checklist" id="checklist"></ul>
       <button class="log-cta" id="logTodayBtn">📝 Log today's session</button>
-      <button class="export-logs" id="exportLogsBtn" type="button">Export logs</button>
+      <div class="card-actions">
+        <button class="export-logs" id="exportLogsBtn" type="button">Export logs</button>
+        <button class="export-logs" id="signOutBtn" type="button">Sign out</button>
+      </div>
     </div>
 
     <div class="card count-card">
@@ -561,6 +582,7 @@
       <textarea id="errorDesc" placeholder="e.g. Forgot to use conservation of momentum direction signs"></textarea>
       <button type="submit">Add error item</button>
       <div class="error-meta">Re-do due date is set automatically for 48 hours from now.</div>
+      <div class="error-meta" id="errorStatus" role="status" aria-live="polite"></div>
     </form>
     <div class="error-list-card">
       <div class="error-list-head"><b>Open re-dos</b><span id="errorCount">0 open</span></div>
@@ -622,16 +644,31 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <h4 id="modalTitle">Log session</h4>
     <div class="md" id="modalDateLine">—</div>
-    <label for="hoursInput">Hours studied</label>
-    <input type="number" id="hoursInput" min="0" max="16" step="0.5" placeholder="e.g. 4.5" />
-    <label id="effortLabel">Effort level</label>
-    <div class="efforts" id="effortRow" role="group" aria-labelledby="effortLabel">
-      <button type="button" data-v="1" aria-label="Effort level 1 of 5">1</button><button type="button" data-v="2" aria-label="Effort level 2 of 5">2</button><button type="button" data-v="3" aria-label="Effort level 3 of 5">3</button><button type="button" data-v="4" aria-label="Effort level 4 of 5">4</button><button type="button" data-v="5" aria-label="Effort level 5 of 5">5</button>
+    <div class="edit-state" id="modalEditState">Editing your entry</div>
+    <div class="modal-section">
+      <label for="hoursInput">Hours studied</label>
+      <input type="number" id="hoursInput" min="0" max="16" step="0.5" placeholder="e.g. 4.5" />
+      <div class="hours-quick" aria-label="Quick hour choices">
+        <button type="button" data-hours="1">1h</button>
+        <button type="button" data-hours="2">2h</button>
+        <button type="button" data-hours="3">3h</button>
+        <button type="button" data-hours="4">4h</button>
+      </div>
+      <label id="effortLabel">Effort level</label>
+      <div class="efforts" id="effortRow" role="group" aria-labelledby="effortLabel">
+        <button type="button" data-v="1" aria-label="Effort level 1 of 5">1</button><button type="button" data-v="2" aria-label="Effort level 2 of 5">2</button><button type="button" data-v="3" aria-label="Effort level 3 of 5">3</button><button type="button" data-v="4" aria-label="Effort level 4 of 5">4</button><button type="button" data-v="5" aria-label="Effort level 5 of 5">5</button>
+      </div>
+      <div class="scale-hint"><span>1 = low energy</span><span>5 = sharp session</span></div>
     </div>
-    <label id="subjectChipLabel">Subjects covered (optional)</label>
-    <div class="subject-chips" id="subjectChipRow" role="group" aria-labelledby="subjectChipLabel"></div>
-    <label for="noteInput">Notes (optional)</label>
-    <textarea id="noteInput" placeholder="What went well, what didn't..."></textarea>
+    <div class="modal-section soft">
+      <label id="subjectChipLabel">Subjects covered <span class="section-note">(optional)</span></label>
+      <div class="subject-chips" id="subjectChipRow" role="group" aria-labelledby="subjectChipLabel"></div>
+    </div>
+    <div class="modal-section soft">
+      <label for="noteInput">Notes <span class="section-note">(optional)</span></label>
+      <textarea id="noteInput" placeholder="What went well, what didn't..."></textarea>
+    </div>
+    <div class="md error" id="modalStatus" role="status" aria-live="polite"></div>
     <div class="modal-actions">
       <button class="mb-cancel" id="mbCancel">Cancel</button>
       <button class="mb-delete" id="mbDelete" style="display:none">Delete</button>
@@ -661,6 +698,9 @@
 const SUPABASE_URL = 'https://ahmcplpvblgjqgzfnbyy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobWNwbHB2YmxnanFnemZuYnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzYzODQsImV4cCI6MjA5OTExMjM4NH0.SuyVUM1k6o5SdcnE2CbKuZAgjIhD4guZ36X6UacAwH8';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentSession=null;
+let syncStatus='';
+let authLoadToken=0;
 
 document.getElementById('authSendBtn').onclick = sendMagicLink;
 document.getElementById('authEmail').addEventListener('keydown', e => {
@@ -681,13 +721,26 @@ async function initAuth() {
   const { data: { session } } = await sb.auth.getSession();
   updateAuthUI(session);
 }
-sb.auth.onAuthStateChange((_event, session) => updateAuthUI(session));
-function updateAuthUI(session) {
+async function updateAuthUI(session) {
   const gate = document.getElementById('authGate');
-  if (session) gate.classList.remove('open');
-  else gate.classList.add('open');
+  const userChanged=session?.user?.id!==currentSession?.user?.id;
+  currentSession=session||null;
+  if (session){
+    gate.classList.remove('open');
+    if(userChanged){
+      LOGS={};
+      ERRORS=[];
+      refreshAllTracking();
+      await loadRemoteTracking(session);
+    }
+  } else {
+    gate.classList.add('open');
+    LOGS={};
+    ERRORS=[];
+    syncStatus='';
+    refreshAllTracking();
+  }
 }
-initAuth();
 
 const SUBJ = {
   'Mathematics':      {v:'--math', tier:1, hrs:7,   pct:100, why:'Your hardest, and purely practice-driven. Two 3-hour papers. Reps compound — it earns a set every single day.'},
@@ -807,20 +860,63 @@ function inRange(t,f,to){return t>=pd(f)&&t<=pd(to);}
 const TODAY = today0();
 const FIRST = pd(EXAMS[0].d);
 
-/* ================= TRACKING: storage ================= */
-const LOG_KEY='trials2026_logs_v1';
-const ERROR_KEY='trials2026_errors_v1';
+/* ================= TRACKING: Supabase-backed state ================= */
 const REMINDER_DISMISS_PREFIX='trials2026_reminder_dismissed_';
-let STORAGE_OK=true;
-function loadLogs(){ try{ const raw=localStorage.getItem(LOG_KEY); return raw?JSON.parse(raw):{}; }catch(e){ STORAGE_OK=false; console.error('Could not read saved logs',e); return {}; } }
-function saveLogs(obj){ try{ localStorage.setItem(LOG_KEY, JSON.stringify(obj)); return true; }catch(e){ STORAGE_OK=false; console.error('Could not save log',e); return false; } }
-function loadErrors(){ try{ const raw=localStorage.getItem(ERROR_KEY); return raw?JSON.parse(raw):[]; }catch(e){ STORAGE_OK=false; console.error('Could not read error log',e); return []; } }
-function saveErrors(list){ try{ localStorage.setItem(ERROR_KEY, JSON.stringify(list)); return true; }catch(e){ STORAGE_OK=false; console.error('Could not save error log',e); return false; } }
-let LOGS = loadLogs();
-let ERRORS = loadErrors();
+let LOGS = {};
+let ERRORS = [];
 function isoKey(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
 
 const WEEKLY_TARGET = Object.values(SUBJ).reduce((a,o)=>a+o.hrs,0);
+
+function setSyncFailure(message, error){
+  syncStatus=message||'Sync failed. Please try again.';
+  if(error) console.error(syncStatus,error);
+  refreshAllTracking();
+}
+function clearSyncFailure(){ syncStatus=''; }
+function requireSession(){
+  if(!currentSession?.user?.id) throw new Error('You need to sign in before saving.');
+  return currentSession;
+}
+async function loadRemoteTracking(session){
+  const token=++authLoadToken;
+  const userId=session.user.id;
+  try{
+    const [logsRes,errorsRes]=await Promise.all([
+      sb.from('logs').select('log_date,hours,effort,subjects,note').eq('user_id',userId),
+      sb.from('error_log').select('id,subject,description,logged_at,redo_due,redo_done_at').eq('user_id',userId).order('logged_at',{ascending:true})
+    ]);
+    if(token!==authLoadToken) return;
+    if(logsRes.error) throw logsRes.error;
+    if(errorsRes.error) throw errorsRes.error;
+    const nextLogs={};
+    (logsRes.data||[]).forEach(row=>{
+      nextLogs[row.log_date]={
+        hours:Number(row.hours)||0,
+        effort:Number(row.effort)||0,
+        subjects:Array.isArray(row.subjects)?row.subjects:[],
+        note:row.note||''
+      };
+    });
+    const nextErrors=(errorsRes.data||[]).map(row=>({
+      id:String(row.id),
+      subject:row.subject,
+      desc:row.description||'',
+      loggedAt:row.logged_at,
+      dueAt:row.redo_due,
+      doneAt:row.redo_done_at
+    }));
+    LOGS=nextLogs;
+    ERRORS=nextErrors;
+    clearSyncFailure();
+    refreshAllTracking();
+  }catch(error){
+    if(token!==authLoadToken) return;
+    LOGS={};
+    ERRORS=[];
+    setSyncFailure('Could not load your synced study data. Check the connection and reload.',error);
+  }
+}
 
 function weekStart(dt){ const d=new Date(dt); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d; }
 function weekEnd(dt){ const s=weekStart(dt); const e=new Date(s); e.setDate(e.getDate()+6); return e; }
@@ -872,14 +968,14 @@ function hasLoggedToday(){
 function reminderDismissKey(type){ return REMINDER_DISMISS_PREFIX+type+'_'+isoKey(TODAY); }
 function isReminderDismissed(type){
   try{return localStorage.getItem(reminderDismissKey(type))==='1';}
-  catch(e){STORAGE_OK=false;return false;}
+  catch(e){console.warn('Could not read reminder dismissal',e);return false;}
 }
 let activeReminderType=null;
 let activeReminderAction='log';
 function dismissReminderForToday(){
   if(!activeReminderType) return;
   try{localStorage.setItem(reminderDismissKey(activeReminderType),'1');}
-  catch(e){STORAGE_OK=false;console.error('Could not save reminder dismissal',e);}
+  catch(e){console.error('Could not save reminder dismissal',e);}
   renderReminderBanner();
 }
 function renderReminderBanner(){
@@ -1207,10 +1303,9 @@ function renderWeekStats(){
       '<div class="wstat"><div class="wlabel">Campaign total</div>'+
         '<div class="wbig">'+total.toFixed(1)+'h</div>'+
         '<div class="wsub">logged since you started tracking</div></div>'+
-      (STORAGE_OK?'':'<div class="wstat" style="grid-column:1/-1;border-color:rgba(255,92,92,.35)">'+
-        '<div class="wlabel" style="color:#ff9090">⚠ Storage blocked</div>'+
-        '<div class="wsub">Your browser won\'t save logs for this file (this can happen when opening a .html file directly by double-clicking). '+
-        'Entries will show for this session but won\'t survive a reload or reopen. If you can, open the file through a local server, or try another browser.</div></div>');
+      (syncStatus?'<div class="wstat" style="grid-column:1/-1;border-color:rgba(255,92,92,.35)">'+
+        '<div class="wlabel" style="color:#ff9090">⚠ Sync issue</div>'+
+        '<div class="wsub">'+syncStatus+'</div></div>':'');
   }catch(e){console.error('Render error:',e);}
 }
 
@@ -1335,29 +1430,66 @@ function setupErrorLog(){
     const form=document.getElementById('errorForm');
     const subject=document.getElementById('errorSubject');
     const desc=document.getElementById('errorDesc');
+    const status=document.getElementById('errorStatus');
     Object.keys(SUBJ).forEach(s=>{
       const option=document.createElement('option');
       option.value=s;option.textContent=s;
       subject.appendChild(option);
     });
-    form.addEventListener('submit',e=>{
+    form.addEventListener('submit',async e=>{
       e.preventDefault();
       const clean=desc.value.trim();
       if(!clean){desc.focus();return;}
       const now=new Date();
       const due=new Date(now.getTime()+48*60*60*1000);
-      ERRORS.push({id:String(Date.now()),subject:subject.value,desc:clean,loggedAt:now.toISOString(),dueAt:due.toISOString(),doneAt:null});
-      saveErrors(ERRORS);
-      desc.value='';
-      refreshAllTracking();
+      status.textContent='';
+      try{
+        const session=requireSession();
+        const {data,error}=await sb.from('error_log').insert({
+          user_id:session.user.id,
+          subject:subject.value,
+          description:clean,
+          logged_at:now.toISOString(),
+          redo_due:due.toISOString(),
+          redo_done_at:null
+        }).select('id,subject,description,logged_at,redo_due,redo_done_at').single();
+        if(error) throw error;
+        ERRORS.push({
+          id:String(data.id),
+          subject:data.subject,
+          desc:data.description||'',
+          loggedAt:data.logged_at,
+          dueAt:data.redo_due,
+          doneAt:data.redo_done_at
+        });
+        clearSyncFailure();
+        desc.value='';
+        refreshAllTracking();
+      }catch(error){
+        status.textContent='Could not save that error item. Check your connection and try again.';
+        setSyncFailure('Could not save the error log item. Try again before relying on it.',error);
+      }
     });
-    document.getElementById('errorList').addEventListener('click',e=>{
+    document.getElementById('errorList').addEventListener('click',async e=>{
       const b=e.target.closest('button[data-id]');if(!b)return;
       const item=ERRORS.find(x=>x.id===b.dataset.id);
       if(!item)return;
-      item.doneAt=new Date().toISOString();
-      saveErrors(ERRORS);
-      refreshAllTracking();
+      status.textContent='';
+      try{
+        const session=requireSession();
+        const doneAt=new Date().toISOString();
+        const {error}=await sb.from('error_log')
+          .update({redo_done_at:doneAt})
+          .eq('user_id',session.user.id)
+          .eq('id',item.id);
+        if(error) throw error;
+        item.doneAt=doneAt;
+        clearSyncFailure();
+        refreshAllTracking();
+      }catch(error){
+        status.textContent='Could not mark that item re-done. Try again.';
+        setSyncFailure('Could not update the error log item. Try again before relying on it.',error);
+      }
     });
   }catch(e){console.error('Render error:',e);}
 }
@@ -1376,6 +1508,8 @@ function refreshAllTracking(){ renderWeekStats(); renderMonthCalendars(); render
 (function(){try{
   const modalBg=document.getElementById('modalBg');
   const modalDateLine=document.getElementById('modalDateLine');
+  const modalEditState=document.getElementById('modalEditState');
+  const modalStatus=document.getElementById('modalStatus');
   const hoursInput=document.getElementById('hoursInput');
   const noteInput=document.getElementById('noteInput');
   const effortRow=document.getElementById('effortRow');
@@ -1394,6 +1528,9 @@ function refreshAllTracking(){ renderWeekStats(); renderMonthCalendars(); render
     modalKey=isoKey(dt);
     modalDateLine.textContent=fmt(dt);
     const existing=LOGS[modalKey];
+    modalStatus.textContent='';
+    modalEditState.textContent='Editing your entry for '+fmt(dt);
+    modalEditState.classList.toggle('show',!!existing);
     hoursInput.value=existing?existing.hours:'';
     noteInput.value=existing?(existing.note||''):'';
     modalEffort=existing?(existing.effort||0):0;
@@ -1420,6 +1557,11 @@ function refreshAllTracking(){ renderWeekStats(); renderMonthCalendars(); render
     const b=e.target.closest('button');if(!b)return;
     modalEffort=Number(b.dataset.v);
     [...effortRow.children].forEach(x=>x.classList.toggle('sel',x===b));
+  });
+  document.querySelector('.hours-quick').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-hours]');if(!b)return;
+    hoursInput.value=b.dataset.hours;
+    hoursInput.focus();
   });
   Object.keys(SUBJ).forEach(subject=>{
     const b=document.createElement('button');
@@ -1452,19 +1594,48 @@ function refreshAllTracking(){ renderWeekStats(); renderMonthCalendars(); render
       else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
     }
   });
-  mbSave.onclick=()=>{
+  mbSave.onclick=async ()=>{
     const hrs=parseFloat(hoursInput.value);
     if(isNaN(hrs)||hrs<0){hoursInput.focus();return;}
-    LOGS[modalKey]={hours:hrs,effort:modalEffort||0,subjects:[...modalSubjects],note:noteInput.value.trim()};
-    saveLogs(LOGS);
-    closeLogModal();
-    refreshAllTracking();
+    modalStatus.textContent='';
+    try{
+      const session=requireSession();
+      const nextLog={hours:hrs,effort:modalEffort||0,subjects:[...modalSubjects],note:noteInput.value.trim()};
+      const {error}=await sb.from('logs').upsert({
+        user_id:session.user.id,
+        log_date:modalKey,
+        hours:nextLog.hours,
+        effort:nextLog.effort,
+        subjects:nextLog.subjects,
+        note:nextLog.note
+      },{onConflict:'user_id,log_date'});
+      if(error) throw error;
+      LOGS[modalKey]=nextLog;
+      clearSyncFailure();
+      closeLogModal();
+      refreshAllTracking();
+    }catch(error){
+      modalStatus.textContent='Could not save this log. Check your connection and try again.';
+      setSyncFailure('Could not save the study log. Try again before closing the page.',error);
+    }
   };
-  mbDelete.onclick=()=>{
-    delete LOGS[modalKey];
-    saveLogs(LOGS);
-    closeLogModal();
-    refreshAllTracking();
+  mbDelete.onclick=async ()=>{
+    modalStatus.textContent='';
+    try{
+      const session=requireSession();
+      const {error}=await sb.from('logs')
+        .delete()
+        .eq('user_id',session.user.id)
+        .eq('log_date',modalKey);
+      if(error) throw error;
+      delete LOGS[modalKey];
+      clearSyncFailure();
+      closeLogModal();
+      refreshAllTracking();
+    }catch(error){
+      modalStatus.textContent='Could not delete this log. Check your connection and try again.';
+      setSyncFailure('Could not delete the study log. Try again before relying on the change.',error);
+    }
   };
   document.getElementById('logTodayBtn').onclick=()=>openLogModal(TODAY);
   document.getElementById('reminderLogBtn').onclick=()=>{
@@ -1489,6 +1660,10 @@ function refreshAllTracking(){ renderWeekStats(); renderMonthCalendars(); render
     a.click();
     a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  document.getElementById('signOutBtn').onclick=async ()=>{
+    const {error}=await sb.auth.signOut();
+    if(error) setSyncFailure('Could not sign out. Check the connection and try again.',error);
   };
 }catch(e){console.error('Render error:',e);}
 })();
@@ -1522,6 +1697,8 @@ window.addEventListener('resize',updateFabVisibility);
 /* ================= INIT TRACKING VIEWS ================= */
 setupErrorLog();
 refreshAllTracking();
+sb.auth.onAuthStateChange((_event, session) => updateAuthUI(session));
+initAuth();
 </script>
 </body>
 </html>

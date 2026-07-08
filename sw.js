@@ -1,6 +1,6 @@
-const CACHE_NAME = "trials-2026-study-v1";
+const CACHE_NAME = "trials-2026-study-v2";
 const ASSETS = [
-  "./Trials_2026_Study_Program.html",
+  "./index.html",
   "./manifest.webmanifest",
   "./icon.svg",
   "./icon-192.png",
@@ -34,9 +34,12 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
   event.respondWith(
     caches.match(event.request).then(cached =>
       cached || fetch(event.request).then(response => {
+        if (!response.ok) return response;
         const copy = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         return response;
