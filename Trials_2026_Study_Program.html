@@ -640,10 +640,55 @@
   </div>
 </div>
 
+<div id="authGate" class="modal-bg open">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
+    <h4 id="authGateTitle">Sign in</h4>
+    <div class="md">Enter your email — we'll send a link to sign in, no password needed.</div>
+    <label for="authEmail">Email</label>
+    <input type="email" id="authEmail" placeholder="you@example.com" />
+    <div class="modal-actions">
+      <button class="mb-save" id="authSendBtn" type="button">Send sign-in link</button>
+    </div>
+    <div class="md" id="authStatus" style="margin-top:10px"></div>
+  </div>
+</div>
+
 <button class="log-fab" id="logFab" type="button">📝 Log today</button>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ================= DATA ================= */
+const SUPABASE_URL = 'https://ahmcplpvblgjqgzfnbyy.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobWNwbHB2YmxnanFnemZuYnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzYzODQsImV4cCI6MjA5OTExMjM4NH0.SuyVUM1k6o5SdcnE2CbKuZAgjIhD4guZ36X6UacAwH8';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.getElementById('authSendBtn').onclick = sendMagicLink;
+document.getElementById('authEmail').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMagicLink();
+});
+async function sendMagicLink() {
+  const email = document.getElementById('authEmail').value.trim();
+  const status = document.getElementById('authStatus');
+  if (!email) return;
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+  status.textContent = error ? 'Something went wrong — try again.' : 'Check your email for the link.';
+}
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  updateAuthUI(session);
+}
+sb.auth.onAuthStateChange((_event, session) => updateAuthUI(session));
+function updateAuthUI(session) {
+  const gate = document.getElementById('authGate');
+  if (session) gate.classList.remove('open');
+  else gate.classList.add('open');
+}
+initAuth();
+
 const SUBJ = {
   'Mathematics':      {v:'--math', tier:1, hrs:7,   pct:100, why:'Your hardest, and purely practice-driven. Two 3-hour papers. Reps compound — it earns a set every single day.'},
   'Physical Sciences':{v:'--phys', tier:1, hrs:6,   pct:86,  why:'A two-paper subject (Physics + Chemistry). Practice-based like Maths — problems daily, formula sheet mastered cold.'},
